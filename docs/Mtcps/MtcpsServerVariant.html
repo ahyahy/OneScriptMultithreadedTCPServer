@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Mtcps Primer1</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="mainstyle.css">
+    <script defer src="mobilstyle.js"></script>
+</head>
+<body id=bodyID class=dtBODY onclick="divrightClick(event)">
+    <div id=nsbanner>
+        <div id=bannerrow1>
+            <table class=bannerparthead cellSpacing=0>
+                <tbody>
+                    <tr id=hdr>
+                        <td class=runninghead></td>
+                        <td class=product></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id=TitleRow>
+            <h1 class=dtH1>Варианты запуска сервера.</h1>
+        </div>
+    </div>
+    <div id=nstext>
+        <h4 class=dtH4>Варианты запуска сервера.</h4>
+        <p>
+			В зависимости от поставленной задачи запуск TCP сервера можно осуществить разными способами. Ниже приведены некоторые из них. 
+			Возможно для Вашей задачи будет найдено своё решение.
+		</p>
+        <h4 class=dtH4>Запуск с блокировкой сценария.</h4>
+        <p>
+			После создания экземпляра класса <b>МногопоточныйTCPСервер (MultithreadedTCPServer)</b> и установки всех необходимых свойств 
+			сервер попадает в цикл ожидания событий.
+		</p>
+        <p>
+			Блокируется выполнение сценария.
+		</p>
+        <p>
+			Пример смотрите в параграфе <a href="MtcpsEchoServer.html">Сервер в "Эхо" режиме.</a>.
+		</p>
+        <h4 class=dtH4>Скрытый запуск через фоновое задание.</h4>
+        <p>
+			После создания экземпляра класса <b>МногопоточныйTCPСервер (MultithreadedTCPServer)</b> запускается фоновое задание в котором сервер в цикле ожидает события.
+			Фоновое задание запускается скрыто, посредством библиотеки.
+		</p>
+        <p>
+			Выполнение сценария не блокируется.
+		</p>
+        <p>
+			Пример смотрите в методе <a href="Mtcps.OneScriptMultithreadedTCPServerBackgroundMultithreadedServerMethod.html">МногопоточныйTCPСерверДляОдноСкрипта.ФоновыйМногопоточныйСервер (OneScriptMultithreadedTCPServer.BackgroundMultithreadedServer)</a>.
+		</p>
+        <h4 class=dtH4>Явный запуск через фоновое задание.</h4>
+        <p>
+			После создания экземпляра класса <b>МногопоточныйTCPСервер (MultithreadedTCPServer)</b> запускается фоновое задание в котором сервер в цикле ожидает события.
+			Фоновое задание запускается явно, в коде сценария.
+		</p>
+        <p>
+			Выполнение сценария не блокируется.
+		</p>
+        <p>
+			Пример смотрите в свойстве <a href="Mtcps.MultithreadedTCPServerCheckClientActivityProperty.html">МногопоточныйTCPСервер.ПроверятьАктивностьКлиента (MultithreadedTCPServer.CheckClientActivity)</a>.
+		</p>
+        <p></p>
+        <h4 class=dtH4>Смотрите также</h4>
+        <p><a href="Mtcps.html">Библиотека&nbsp;MultithreadedTCPServer</a></p>
+    </div>
+</body>
+</html>

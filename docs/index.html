@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Главная</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="styleos.css">
+	<script defer src="mobil.js"></script>
+</head>
+<body>
+    <header>
+        <section>
+            <div>
+                <div id="logo"><big><big><big>Многопоточный TCP сервер <br><small><small>для сценарного языка</small></small> OneScript</big></big></big></div>
+            </div>
+            <div style="direction: rtl; overflow:hidden; padding: 8px 0px 0px 0px; margin-top:-7px;">
+				<div id=div22>
+					<input type="checkbox" id="toggle">
+					<label id="label1" class="hamburger-icon" onclick="label1click()"><div></div><div></div><div></div></label>
+				</div>
+                <nav>
+                    <a onclick="navclick(event)" href="index.html">Главная</a>
+                    <a onclick="navclick(event)" href="screenshot.html">Скриншоты</a>
+                    <a onclick="navclick(event)" href="howworks.html">Как это работает</a>
+                    <a onclick="navclick(event)" href="doc.html">Документация</a>
+                    <a onclick="navclick(event)" href="down.html">Скачать</a>
+                    <a onclick="navclick(event)" href="kont.html">Контакты</a>
+					<input type="checkbox" id="toggle2">
+                    <a id="mobil" onclick="mobilClick()">`</a>
+                </nav>
+            </div>
+        </section>
+    </header>
+    <section>
+        <p>
+			Для языка сценариев <a href="https://oscript.io/" target="_blank">OneScript</a> есть замечательная возможность 
+			расширять функционал за счет новых библиотек. Представленная здесь библиотека даст возможность сетевого общения между компьютерами 
+			по схеме клиент-сервера используя TCP протокол.
+        </p>
+        <p>
+			Цель данной разработки:
+			<div style="margin-left: 40px">
+				<li>
+					Создать <b>кроссплатформенный многопоточный</b> TCP сервер для OneScript.
+				</li>
+				<li>
+					Создать TCP клиент для OneScript.
+				</li>
+				<li>
+					Сервер должен <b>держать открытым</b> соединение с клиентами до момента, пока или клиент, 
+					или сервер не разорвут соединение. Это основное отличие от классической схемы подключение-запрос-ответ-разрыв соединения. 
+				</li>
+				<li>
+					Количество одновременных подключений обрабатываемых без ощутимых задержек должно быть не менее <b>1500</b>.
+				</li>
+				<li>
+					Обеспечить <b>не блокирующий</b> сценарий запуск как сервера, так и клиента.
+				</li>
+				<li>
+					Обеспечить <b>обработку событий</b> сервера и клиента в коде OneScript.
+				</li>
+				<li>
+					Предусмотреть возможность как <b>массовой рассылки</b> сообщений всем подключенным клиентам, так и отправки сообщения 
+					<b>отдельным клиентам</b> по выбору.
+				</li>
+				<li>
+					Простая работа с пересылаемыми данными. Возможность в коде OneScript задавать протоколы передачи данных. Для этого 
+					получаемые и передаваемые данные приведены к типу <b>БуферДвоичныхДанных (BinaryDataBuffer)</b>. Этот тип позволяет легко манипулировать 
+					байт данными, вставлять информацию о длине передаваемого отдельного сообщения, типе данных в сообщении.
+				</li>
+				<li>
+					При необходимости данные должны быть защищены криптографическим протоколом <b>TLS (Transport Layer Security)</b>. TLS работает 
+					поверх TCP, и сервер использует его для создания защищённого канала связи, который обеспечивает конфиденциальность, 
+					целостность и подлинность соединения (аутентификацию). 
+				</li>
+			</div>
+		</p>
+		<p></p>
+    </section>
+</body>
+</html>

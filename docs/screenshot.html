@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Скриншоты</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="styleos.css">
+	<script defer src="mobil.js"></script>
+</head>
+<body>
+    <header>
+        <section>
+            <div>
+                <div id="logo"><big><big><big>Многопоточный TCP сервер <br><small><small>для сценарного языка</small></small> OneScript</big></big></big></div>
+            </div>
+            <div style="direction: rtl; overflow:hidden; padding: 8px 0px 0px 0px; margin-top:-7px;">
+				<div id=div22>
+					<input type="checkbox" id="toggle">
+					<label id="label1" class="hamburger-icon" onclick="label1click()"><div></div><div></div><div></div></label>
+				</div>
+                <nav>
+                    <a onclick="navclick(event)" href="index.html">Главная</a>
+                    <a onclick="navclick(event)" href="screenshot.html">Скриншоты</a>
+                    <a onclick="navclick(event)" href="howworks.html">Как это работает</a>
+                    <a onclick="navclick(event)" href="doc.html">Документация</a>
+                    <a onclick="navclick(event)" href="down.html">Скачать</a>
+                    <a onclick="navclick(event)" href="kont.html">Контакты</a>
+					<input type="checkbox" id="toggle2">
+                    <a id="mobil" onclick="mobilClick()">`</a>
+                </nav>
+            </div>
+        </section>
+    </header>
+    <section>
+		<p>Несколько снимков для примера.</p>
+        <figure>
+			<div style="display: flex; flex-wrap: wrap;">
+				<div style="flex-direction: row;">
+					<div style="flex-direction: column;">
+						<img id="myImg01" src="TCPserver1.jpg" alt="Сервер" onclick="clickimg(event)">
+						<div id="myModal01" class="modal">
+							<span id="close01" class="close">×</span>
+							<img id="img01" class="modal-content">
+							<div id="caption">Сервер</div>
+						</div>
+					</div>
+					<div style="flex-direction: column;">Сервер</div>
+				</div>
+				<p></p>
+			</div>
+        </figure>
+        <p></p>
+    </section>
+</body>
+</html>

@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>ASCII Property</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="mainstyle.css">
+    <script defer src="mobilstyle.js"></script>
+</head>
+<body id=bodyID class=dtBODY>
+    <div id=nsbanner>
+        <div id=bannerrow1>
+            <table class=bannerparthead cellSpacing=0>
+                <tbody>
+                    <tr id=hdr>
+                        <td class=runninghead></td>
+                        <td class=product></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id=TitleRow>
+            <h1 class=dtH1>Кодировка.ASCII&nbsp;(Encoding.ASCII)&nbsp;Свойство</h1>
+        </div>
+    </div>
+    <div id=nstext>
+        <h4 class=dtH4>Использование</h4>
+        <p>Только чтение.</p>
+        <h4 class=dtH4>Значение</h4>
+        <p>Тип: <A href="Mtcps.Encoding.html">Кодировка&nbsp;(Encoding)</A>.</p>
+        <p>Возвращает кодировку для набора символов ASCII (7-разрядных).</p>
+        <h4 class=dtH4>Примечание</h4>
+        <p>Символы ASCII ограничены самыми низкими 128 символами Unicode, начиная с U + 0000 до U + 007f.</p>
+        <h4 class=dtH4>Пример</h4>
+            <pre class=code>
+Кодировка3 = МС.Кодировка().ASCII;
+</pre>
+            <details>
+                <summary>Полный пример кода</summary>
+                    <pre class=code>
+<button id="copy1" type="button" style="font-size:100%;">Копировать</button>
+<hr style="border-color: lightgray;"><div id="cont1">
+ПодключитьВнешнююКомпоненту("C:\444\111\MultithreadedTCPServer\MultithreadedTCPServer\bin\Debug\MultithreadedTCPServer.dll");
+МС = Новый МногопоточныйTCPСерверДляОдноСкрипта();
+
+Кодировка1 = МС.Кодировка();
+Кодировка2 = Кодировка1.Юникод;
+Кодировка3 = МС.Кодировка().ASCII;
+
+Сообщить("ТипЗнч(Кодировка3) = " + ТипЗнч(Кодировка3));
+
+Пока МС.Продолжать Цикл
+	МС.ПолучитьСобытие().Выполнить();
+КонецЦикла;
+</div>
+</pre>
+            </details>
+        <p></p>
+        <h4 class=dtH4>Смотрите также</h4>
+        <p><a href="Mtcps.html">Библиотека&nbsp;MultithreadedTCPServer</a></p>
+    </div>
+</body>
+</html>

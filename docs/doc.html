@@ -1,0 +1,126 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang="ru">
+<head>
+    <title>Документация</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="styleos.css">
+	<script defer src="mobil.js"></script>
+</head>
+<body>
+    <header>
+        <section>
+            <div>
+                <div id="logo"><big><big><big>Многопоточный TCP сервер <br><small><small>для сценарного языка</small></small> OneScript</big></big></big></div>
+            </div>
+            <div style="direction: rtl; overflow:hidden; padding: 8px 0px 0px 0px; margin-top:-7px;">
+                <div id=div22>
+                    <input type="checkbox" id="toggle">
+                    <label id="label1" class="hamburger-icon" onclick="label1click()"><div></div><div></div><div></div></label>
+                </div>
+                <nav>
+                    <a onclick="navclick(event)" href="index.html">Главная</a>
+                    <a onclick="navclick(event)" href="screenshot.html">Скриншоты</a>
+                    <a onclick="navclick(event)" href="howworks.html">Как это работает</a>
+                    <a onclick="navclick(event)" href="doc.html">Документация</a>
+                    <a onclick="navclick(event)" href="down.html">Скачать</a>
+                    <a onclick="navclick(event)" href="kont.html">Контакты</a>
+                    <input type="checkbox" id="toggle2">
+                    <a id="mobil" onclick="mobilClick()">`</a>
+                </nav>
+            </div>
+        </section>
+    </header>
+    <div class="cont1">
+        <!-- Секция переключателя -->
+        <input type="checkbox" id="toggle1">
+        <!-- Блок для затемнения справки -->
+        <div class="divmodal"></div>
+        <!-- Сама справка -->
+        <div class="divleft" id="divleftid" onclick="divleftClick(event)">
+            <div id="expandcollapse">
+                <div id="expand" onclick="expand()">развернуть</div>
+                <div id="separator">&nbsp;|&nbsp;</div>
+                <div id="collapse" onclick="collapse()">свернуть</div>
+            </div>
+			<details>
+                <summary class="menu"><a href="Mtcps/Intro.html" target="right">Многопоточный TCP сервер</a></summary>
+				<details>
+					<summary class="menu2"><a href="Mtcps/Mtcps.html" target="right">Классы</a></summary>					
+					<details>
+						<summary class="menu3"><a href="Mtcps/Mtcps.TCPClient.html" target="right">TCPКлиент (TCPClient)</a></summary>
+						<p class="prop"><a href="Mtcps/Mtcps.TCPClientConstructor.html" target="right">Конструктор</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.TCPClientEvents.html" target="right">События</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.TCPClientProperties.html" target="right">Свойства</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.TCPClientMethods.html" target="right">Методы</a></p>
+					</details>
+					<details>
+						<summary class="menu3"><a href="Mtcps/Mtcps.EventArgs.html" target="right">АргументыСобытия (EventArgs)</a></summary>
+						<p class="prop"><a href="Mtcps/Mtcps.EventArgsProperties.html" target="right">Свойства</a></p>
+					</details>
+					<details>
+						<summary class="menu3"><a href="Mtcps/Mtcps.Action.html" target="right">Действие (Action)</a></summary>
+						<p class="prop"><a href="Mtcps/Mtcps.ActionConstructor.html" target="right">Конструктор</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.ActionProperties.html" target="right">Свойства</a></p>
+					</details>
+					<details>
+						<summary class="menu3"><a href="Mtcps/Mtcps.Encoding.html" target="right">Кодировка (Encoding)</a></summary>
+						<p class="prop"><a href="Mtcps/Mtcps.EncodingConstructor.html" target="right">Конструктор</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.EncodingProperties.html" target="right">Свойства</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.EncodingMethods.html" target="right">Методы</a></p>
+					</details>
+					<details>
+						<summary class="menu3"><a href="Mtcps/Mtcps.MultithreadedTCPServer.html" target="right">МногопоточныйTCPСервер (MultithreadedTCPServer)</a></summary>
+						<p class="prop"><a href="Mtcps/Mtcps.MultithreadedTCPServerConstructor.html" target="right">Конструктор</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.MultithreadedTCPServerEvents.html" target="right">События</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.MultithreadedTCPServerProperties.html" target="right">Свойства</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.MultithreadedTCPServerMethods.html" target="right">Методы</a></p>
+					</details>
+					<details>
+						<summary class="menu3"><a href="Mtcps/Mtcps.OneScriptMultithreadedTCPServer.html" target="right">МногопоточныйTCPСерверДляОдноСкрипта (OneScriptMultithreadedTCPServer)</a></summary>
+						<p class="prop"><a href="Mtcps/Mtcps.OneScriptMultithreadedTCPServerConstructor.html" target="right">Конструктор</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.OneScriptMultithreadedTCPServerEvents.html" target="right">События</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.OneScriptMultithreadedTCPServerProperties.html" target="right">Свойства</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.OneScriptMultithreadedTCPServerMethods.html" target="right">Методы</a></p>
+					</details>
+					<details>
+						<summary class="menu3"><a href="Mtcps/Mtcps.NetworkStream.html" target="right">ПотокСети (NetworkStream)</a></summary>
+						<p class="prop"><a href="Mtcps/Mtcps.NetworkStreamProperties.html" target="right">Свойства</a></p>
+						<p class="prop"><a href="Mtcps/Mtcps.NetworkStreamMethods.html" target="right">Методы</a></p>
+					</details>
+				</details><!-- end class -->
+
+				<details>
+					<summary class="menu2"><a href="Mtcps/Enumerations.html" target="right">Перечисления</a></summary>
+					<p class="konstr"><a href="Mtcps/Mtcps.ServerStateEnumeration.html" target="right">СостояниеСервера (ServerState)</a></p>
+				</details>
+			</details>
+
+            <details>
+                <summary class="menu"><a href="Mtcps/MtcpsAppendix.html" target="right">Дополнения</a></summary>
+                <p class="konstr"><a href="Mtcps/MtcpsClientVariant.html" target="right">Варианты запуска клиента.</a></p>
+                <p class="konstr"><a href="Mtcps/MtcpsServerVariant.html" target="right">Варианты запуска сервера.</a></p>
+                <p class="konstr"><a href="Mtcps/MtcpsEchoServer.html" target="right">Сервер в "Эхо" режиме.</a></p>
+            </details>
+        </div>
+        <!-- Конец секции переключателя -->
+        <div id=nsbanner>
+            <div id=TitleRow>
+                <!-- Секция меню -->
+                <section class="menuFrame">
+                    <div id=div2 onclick="disableScroll()">
+                        <div id="menu1"></div>
+                        <label id="label2" for="toggle1" class="hamburger-icon1" onclick="label2click()"><div></div><div></div><div></div></label>
+                    </div>
+                    <div id=div3>
+                        <h1 class=dtH1 id="titlepage">Терминал-формы</h1>
+                    </div>
+                </section>
+                <!-- Конец секции меню -->
+            </div>
+        </div>
+        <div class="frameright">
+            <iframe name="right" id="iframeid" src="Mtcps/Intro.html"></iframe>
+        </div>
+    </div>
+</body>
+</html>
