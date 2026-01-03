@@ -15,10 +15,10 @@ namespace mtcps
             _sslStream = sslStream;
         }
 
-        [ContextProperty("МожноЧитать", "CanRead")]
+        [ContextProperty("ВозможностьЧтения", "CanRead")]
         public bool CanRead => _sslStream?.CanRead ?? false;
 
-        [ContextProperty("МожноПисать", "CanWrite")]
+        [ContextProperty("ВозможностьЗаписи", "CanWrite")]
         public bool CanWrite => _sslStream?.CanWrite ?? false;
 
         [ContextMethod("ПрочитатьВБуферДвоичныхДанных", "ReadToBinaryDataBuffer")]

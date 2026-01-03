@@ -1,5 +1,4 @@
-﻿using ScriptEngine.HostedScript.Library.Binary;
-using ScriptEngine.HostedScript.Library;
+﻿using ScriptEngine.HostedScript.Library;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
 using System.Collections.Concurrent;
@@ -170,21 +169,6 @@ namespace mtcps
             instance.OnServerReceived(args);
         }
 
-        //БезопасныйПоток", "MsSslStream
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         [ContextMethod("Кодировка", "Encoding")]
         public MsEncoding Encoding()
         {
@@ -256,11 +240,88 @@ namespace mtcps
         [ContextMethod("TCPКлиентSSL", "TCPClientSSL")]
         public MsTCPClientSSL TCPClientSSL(IValue HostName = null, IValue port = null, IValue path_certificate_crt = null)
         {
-            if (Utils.AllNotNull(HostName, port, path_certificate_crt))
+            if (Utils.AllNotNull(HostName, port) && Utils.AllNull(path_certificate_crt))
+            {
+                return new MsTCPClientSSL(HostName.AsString(), Utils.ToInt32(port));
+            }
+            else if (Utils.AllNotNull(HostName, port, path_certificate_crt))
             {
                 return new MsTCPClientSSL(HostName.AsString(), Utils.ToInt32(port), path_certificate_crt.AsString());
             }
             return new MsTCPClientSSL();
+        }
+
+        [ContextMethod("МногопоточныйСерверSSL", "MultithreadedServerSSL")]
+        public MsMultithreadedTCPServerSSL MultithreadedTCPServerSSL(int port, string path_cert = "certificate.pfx", string pas = "swordfish20231223")
+        {
+            return new MsMultithreadedTCPServerSSL(port, path_cert, pas);
+        }
+
+        public static bool multiServerUploadedSSL = false;
+        public static bool multiServerErrorSSL = false;
+        [ContextMethod("ФоновыйМногопоточныйСерверSSL", "BackgroundMultithreadedServerSSL")]
+        public MsMultithreadedTCPServerSSL BackgroundMultithreadedServerSSL(int port, string path_cert = "certificate.pfx", string pas = "swordfish20231223")
+        {
+            string backgroundTasksMultiTCPServerSSL = @"
+Процедура ЗапускМногопоточногоСервераSSL(параметр1, параметр2) Экспорт
+    Контекст = Новый Структура();
+    Контекст.Вставить(""МС"", параметр1);
+    Контекст.Вставить(""Сервер"", параметр2);
+	Стр = ""
+	|
+	|Процедура Сервер_ПриПодключенииКлиента() Экспорт
+	|    МС.ОбработатьПриПодключенииКлиента(МС.АргументыСобытия);
+	|КонецПроцедуры
+	|
+	|Процедура Сервер_ПриОтключенииКлиента() Экспорт
+	|    МС.ОбработатьПриОтключенииКлиента(МС.АргументыСобытия);
+	|КонецПроцедуры
+	|
+	|Процедура Сервер_СерверПолучилДанные() Экспорт
+	|    МС.ОбработатьСерверПолучилДанные(МС.АргументыСобытия);
+	|КонецПроцедуры
+	|
+	|Процедура Сервер_ПриОшибкеСервера() Экспорт
+	|    МС.ОбработатьПриОшибкеСервера(МС.АргументыСобытия);
+	|КонецПроцедуры
+	|
+	|Сервер.ПриПодключенииКлиента = МС.Действие(ЭтотОбъект, """"Сервер_ПриПодключенииКлиента"""");
+	|Сервер.ПриОтключенииКлиента = МС.Действие(ЭтотОбъект, """"Сервер_ПриОтключенииКлиента"""");
+	|Сервер.СерверПолучилДанные = МС.Действие(ЭтотОбъект, """"Сервер_СерверПолучилДанные"""");
+	|Сервер.ПриОшибкеСервера = МС.Действие(ЭтотОбъект, """"Сервер_ПриОшибкеСервера"""");
+	|Сервер.Начать();
+	|
+	|Пока МС.Продолжать Цикл
+	|   МС.ПолучитьСобытие().Выполнить();
+	|КонецЦикла;
+	|"";
+	ЗагрузитьСценарийИзСтроки(Стр, Контекст);
+КонецПроцедуры
+
+МассивПараметров = Новый Массив(2);
+МассивПараметров[0] = МС;
+МассивПараметров[1] = Сервер;
+Задание = ФоновыеЗадания.Выполнить(ЭтотОбъект, ""ЗапускМногопоточногоСервераSSL"", МассивПараметров);
+";
+
+            MsMultithreadedTCPServerSSL MultiTCPServerSSL = new MsMultithreadedTCPServerSSL(port, path_cert, pas);
+            StructureImpl extContext = new StructureImpl();
+            extContext.Insert("МС", instance);
+            extContext.Insert("Сервер", MultiTCPServerSSL);
+            Utils.GlobalContext().LoadScriptFromString(backgroundTasksMultiTCPServerSSL, extContext);
+            while (!multiServerUploadedSSL)
+            {
+                System.Threading.Thread.Sleep(300);
+                if (multiServerErrorSSL)
+                {
+                    break;
+                }
+            }
+            if (multiServerErrorSSL)
+            {
+                return null;
+            }
+            return MultiTCPServerSSL;
         }
 
         [ContextMethod("МногопоточныйСервер", "MultithreadedServer")]
@@ -268,16 +329,6 @@ namespace mtcps
         {
             return new MsMultithreadedTCPServer(port);
         }
-        [ContextMethod("МногопоточныйСерверSSL", "MultithreadedServerSSL")]
-        public MsMultithreadedTCPServerSSL MultithreadedTCPServerSSL(int port, string path_certificate_crt = null, string pas = null)
-        {
-            return new MsMultithreadedTCPServerSSL(port, path_certificate_crt, pas);
-        }
-
-
-
-
-
 
         public static bool multiServerUploaded = false;
         public static bool multiServerError = false;
@@ -344,6 +395,54 @@ namespace mtcps
                 return null;
             }
             return MultiTCPServer;
+        }
+
+        [ContextMethod("ФоновыйTCPКлиентSSL", "BackgroundTCPClientSSL")]
+        public MsTCPClientSSL LaunchTCPConnectionSSL(string HostName, int port, string path_certificate_crt = "certificate.crt")
+        {
+            return LoadTCPClientSSL(HostName, port, path_certificate_crt);
+        }
+
+        public static MsTCPClientSSL LoadTCPClientSSL(string HostName, int port, string path_certificate_crt)
+        {
+            string backgroundTasksTCPConnectionSSL = @"
+Процедура ЗапускКлиентаSSL(параметр1) Экспорт
+    Контекст = Новый Структура();
+    Контекст.Вставить(""Клиент"", параметр1);
+	Стр = ""
+	|Перем ПотокСети1;
+	|
+	|Процедура ПроверитьСообщение()
+	|    Клиент.ОбработатьКлиентПолучилДанные(ПотокСети1.ПрочитатьВБуферДвоичныхДанных());
+	|КонецПроцедуры
+	|
+	|ПотокСети1 = Клиент.ПолучитьПотокSSL();
+	|
+	|Пока Клиент.Подключен Цикл
+	|    Приостановить(100);
+	|    ПроверитьСообщение();
+	|КонецЦикла;
+	|"";
+	ЗагрузитьСценарийИзСтроки(Стр, Контекст);
+КонецПроцедуры
+
+МассивПараметров = Новый Массив(1);
+МассивПараметров[0] = Клиент;
+Задание = ФоновыеЗадания.Выполнить(ЭтотОбъект, ""ЗапускКлиентаSSL"", МассивПараметров);
+";
+            MsTCPClientSSL clientTCPSSL = new MsTCPClientSSL(HostName, port, path_certificate_crt);
+            StructureImpl extContext = new StructureImpl();
+            extContext.Insert("Клиент", clientTCPSSL);
+            Utils.GlobalContext().LoadScriptFromString(backgroundTasksTCPConnectionSSL, extContext);
+
+            if (clientTCPSSL.Connected)
+            {
+                return clientTCPSSL;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         [ContextMethod("ФоновыйTCPКлиент", "BackgroundTCPClient")]
@@ -434,6 +533,12 @@ namespace mtcps
         public void CreateSelfSignedCertificate(string path, string subjectName, string pas)
         {
             MsMultithreadedTCPServerSSL.CreateSelfSignedCertificate(path, subjectName, pas);
+        }
+
+        [ContextMethod("ИзвлечьCrtИзPfx", "ExtractCrtFromPfx")]
+        public void ExtractCrtFromPfx(string pfxPath, string password, string crtPath)
+        {
+            MsMultithreadedTCPServerSSL.ExtractCrtFromPfx(pfxPath, password, crtPath);
         }
     }
 }

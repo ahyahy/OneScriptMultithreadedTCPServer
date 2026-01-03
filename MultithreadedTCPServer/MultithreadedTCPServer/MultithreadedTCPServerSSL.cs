@@ -23,10 +23,10 @@ namespace mtcps
         private volatile ServerState _state = ServerState.Stopped;
         private readonly object _stateLock = new object();
         public ServerState State => _state;
-        private int maxMessageSize = 1024 * 1024 * 128; // 128 MB
+        private int maxMessageSize = 1024 * 1024 * 128; // 128 MB Ограничение на размер принимаемого сообщения.
         private readonly ByteBufferPool _bufferPool = new ByteBufferPool(1024);
-        private int maxClients = 1500;
-        public int ActiveClients => _clients.Count;
+        private int maxClients = 1500; // Ограничение на количество подключаемых клиентов.
+        public int ActiveClients => _clients.Count; // Количество активных клиентов.
         private TcpListener _listener;
         private X509Certificate2 certificate = null;
         private ConcurrentDictionary<string, ClientInfo> _clients = new ConcurrentDictionary<string, ClientInfo>();
@@ -34,16 +34,15 @@ namespace mtcps
         private bool _isRunning;
         public int Port { get; set; } = 8080;
         public System.Text.Encoding Encoding { get; set; } = System.Text.Encoding.UTF8;
-        public TimeSpan HeartbeatInterval { get; set; } = TimeSpan.FromSeconds(10);
+        public TimeSpan HeartbeatInterval { get; set; } = TimeSpan.FromSeconds(10); // Интервал проверки активности клиента.
 
         public event Action<string> OnClientConnected;
         public event Action<string> OnClientDisconnected;
         public event Action<string, BinaryDataBuffer> OnMessageReceived;
         public event Action<string> OnServerError;
 
-        private static string pathCertificateCrt;
-        private static string pathCertificatePfx = "certificate.pfx";
-        private static string password = "swordfish20231223";
+        private static string pathCert;
+        private static string password;
 
         private class ClientInfo
         {
@@ -55,21 +54,12 @@ namespace mtcps
             public SemaphoreSlim WriteLock { get; } = new SemaphoreSlim(1, 1); // Семафор для синхронизации записи
         }
 
-        public MultithreadedTCPServerSSL(int port, string path_certificate_crt = null, string path_certificate_pfx = null, string pas = null)
+        public MultithreadedTCPServerSSL(int port, string path_cert, string pas)
         {
             Port = port;
-            if (path_certificate_crt != null)
-            {
-                pathCertificateCrt = path_certificate_crt;
-            }
-            if (path_certificate_pfx != null)
-            {
-                pathCertificatePfx = path_certificate_pfx;
-            }
-            if (pas != null)
-            {
-                password = pas;
-            }
+            pathCert = path_cert;
+            password = pas;
+
             OnClientConnected += MultithreadedTCPServer_OnClientConnected;
             OnClientDisconnected += MultithreadedTCPServer_OnClientDisconnected;
             OnMessageReceived += MultithreadedTCPServer_OnMessageReceived;
@@ -147,25 +137,35 @@ namespace mtcps
             _isRunning = true;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
 
-            // Загрузка сертификата
-            certificate = new X509Certificate2(pathCertificatePfx, password);
+            try
+            {
+                // Загрузка сертификата с приватным ключом (если объединены).
+                certificate = new X509Certificate2(pathCert, password);
+            }
+            catch (Exception ex)
+            {
+                OnServerError?.Invoke("Ошибка сервера: " + ex.Message);
+                return;
+            }
 
             _listener = new TcpListener(IPAddress.Any, Port);
-            _listener.Start(100);
+            _listener.Start(100); // backlog для ожидающих подключений.
 
             _state = ServerState.Running;
             Utils.GlobalContext().Echo("SSL сервер запущен на порт " + Port);
-            OneScriptMultithreadedTCPServer.multiServerUploaded = true;
+            OneScriptMultithreadedTCPServer.multiServerUploadedSSL = true;
 
             try
             {
                 var acceptTasks = new List<Task>();
-                int acceptLoops = Math.Max(1, System.Environment.ProcessorCount / 2);
+                // Запускаем несколько задач для приема подключений.
+                int acceptLoops = Math.Max(1, System.Environment.ProcessorCount / 2); // Оптимальное количество.
                 for (int i = 0; i < acceptLoops; i++)
                 {
                     acceptTasks.Add(AcceptClientsLoopAsync(_cts.Token));
                 }
 
+                // Ожидаем завершения всех задач или отмены.
                 await Task.WhenAll(acceptTasks).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
@@ -198,14 +198,14 @@ namespace mtcps
                         break;
                     }
 
-                    // Ограничение количества клиентов
+                    // Ограничение количества одновременных подключений.
                     if (_clients.Count >= MaxClients)
                     {
                         await SendRejectionAndClose(client, "Сервер перегружен");
                         continue;
                     }
 
-                    // Настройка таймаутов
+                    // Настраиваем таймауты клиента.
                     client.ReceiveTimeout = 30000;
                     client.SendTimeout = 10000;
 
@@ -220,10 +220,12 @@ namespace mtcps
                 }
                 catch (ObjectDisposedException)
                 {
+                    // Сервер прослушивания был остановлен.
                     break;
                 }
                 catch (SocketException ex) when (ex.SocketErrorCode == SocketError.Interrupted)
                 {
+                    // Прервано вызовом Stop().
                     break;
                 }
                 catch (Exception ex)
@@ -242,7 +244,7 @@ namespace mtcps
             {
                 var data = Encoding.GetBytes($"ERROR: {message}\n");
                 await client.GetStream().WriteAsync(data, 0, data.Length);
-                await Task.Delay(100);
+                await Task.Delay(100); // Даем время на отправку.
             }
             catch { }
             finally
@@ -284,10 +286,13 @@ namespace mtcps
 
                 if (CheckClientActivity)
                 {
+                    // Запускаем пингование клиента (heartbeat) в фоне.
                     var heartbeatTask = HeartbeatLoopAsync(clientInfo, clientInfo.Cts.Token);
+                    // Основной цикл чтения.
                     await ReadLoopAsync(clientInfo, clientInfo.Cts.Token).ConfigureAwait(false);
-
+                    // Отменяем пингование клиента (heartbeat).
                     clientInfo.Cts.Cancel();
+                    // Ожидаем завершения пингования клиента (heartbeat) с обработкой исключений.
                     await heartbeatTask.ContinueWith(t =>
                     {
                         if (t.IsFaulted)
@@ -298,6 +303,7 @@ namespace mtcps
                 }
                 else
                 {
+                    // Основной цикл чтения.
                     await ReadLoopAsync(clientInfo, clientInfo.Cts.Token).ConfigureAwait(false);
                 }
             }
@@ -329,6 +335,7 @@ namespace mtcps
                 {
                     try
                     {
+                        // Читаем входящие данные.
                         BinaryDataBuffer bdb = new BinaryDataBuffer(new byte[0]);
                         int bytesRead = 0;
 
@@ -336,7 +343,7 @@ namespace mtcps
                         {
                             bytesRead = await clientInfo.SslStream.ReadAsync(buffer, 0, buffer.Length, token).ConfigureAwait(false);
                             bdb = bdb.Concat((new BinaryDataBuffer(buffer)).Read(0, bytesRead));
-
+                            // Ограничение на размер сообщения.
                             if (bdb.Size > maxMessageSize)
                             {
                                 await SendRejectionAndClose(clientInfo.Client, "Превышен размер сообщения");
@@ -349,12 +356,13 @@ namespace mtcps
                         if (bdb?.Count() > 0)
                         {
                             clientInfo.LastActivity = DateTime.UtcNow;
+                            // Вызываем обработчик данных.
                             OnMessageReceived?.Invoke(clientInfo.Id, bdb);
                         }
                     }
                     catch (IOException ex) when (ex.InnerException is SocketException)
                     {
-                        break;
+                        break; // Соединение разорвано.
                     }
                     catch (OperationCanceledException)
                     {
@@ -386,15 +394,15 @@ namespace mtcps
                         break;
                     }
 
-                    // Проверяем активность клиента
+                    // Проверяем активность клиента.
                     if ((DateTime.UtcNow - clientInfo.LastActivity) > TimeSpan.FromSeconds(Convert.ToInt32(HeartbeatInterval.TotalSeconds * 3)))
                     {
-                        // Клиент неактивен слишком долго
+                        // Клиент неактивен слишком долго.
                         OnServerError?.Invoke("Клиент " + clientInfo.Id + " неактивен");
                         break;
                     }
 
-                    // Отправляем PING с использованием lock
+                    // Отправляем PING с использованием lock.
                     await clientInfo.WriteLock.WaitAsync();
                     try
                     {
@@ -418,7 +426,7 @@ namespace mtcps
             }
             catch (OperationCanceledException)
             {
-                // Нормальное завершение
+                // Нормальное завершение по токену.
             }
             catch (Exception ex)
             {
@@ -426,6 +434,7 @@ namespace mtcps
             }
         }
 
+        // Отправить строку в сообщении конкретному клиенту.
         public async Task<bool> SendAsync(string clientId, string message)
         {
             if (!_clients.TryGetValue(clientId, out var clientInfo) || !clientInfo.Client.Connected)
@@ -444,6 +453,7 @@ namespace mtcps
             catch (Exception ex)
             {
                 OnServerError?.Invoke("Ошибка отправки клиенту " + clientId + ": " + ex.Message);
+                // При ошибке отправки удаляем клиента.
                 _clients.TryRemove(clientId, out _);
                 return false;
             }
@@ -453,6 +463,7 @@ namespace mtcps
             }
         }
 
+        // Отправить байты в сообщении конкретному клиенту.
         public async Task<bool> SendAsync(string clientId, BinaryDataBuffer message)
         {
             if (!_clients.TryGetValue(clientId, out var clientInfo) || !clientInfo.Client.Connected)
@@ -471,6 +482,7 @@ namespace mtcps
             catch (Exception ex)
             {
                 OnServerError?.Invoke("Ошибка отправки клиенту " + clientId + ": " + ex.Message);
+                // При ошибке отправки удаляем клиента.
                 _clients.TryRemove(clientId, out _);
                 return false;
             }
@@ -480,6 +492,7 @@ namespace mtcps
             }
         }
 
+        // Отправить строку всем клиентам.
         public async Task BroadcastAsync(string message)
         {
             var data = Encoding.GetBytes(message.EndsWith("\n") ? message : message + "\n");
@@ -489,7 +502,7 @@ namespace mtcps
             // Создаем копию для безопасной итерации
             var clientsSnapshot = _clients.ToArray();
 
-            Utils.GlobalContext().Echo($"Начинаю рассылку для {clientsSnapshot.Length} клиентов");
+            //Utils.GlobalContext().Echo($"Начинаю рассылку для {clientsSnapshot.Length} клиентов");
 
             foreach (var kvp in clientsSnapshot)
             {
@@ -509,7 +522,7 @@ namespace mtcps
                 _clients.TryRemove(clientId, out _);
             }
 
-            Utils.GlobalContext().Echo($"Рассылка завершена");
+            //Utils.GlobalContext().Echo($"Рассылка завершена");
         }
 
         private async Task SendToClientWithLock(ClientInfo clientInfo, byte[] data)
@@ -534,6 +547,7 @@ namespace mtcps
             }
         }
 
+        // Отправить байты всем клиентам.
         public async Task BroadcastAsync(BinaryDataBuffer message)
         {
             var data = message.Bytes;
@@ -573,19 +587,21 @@ namespace mtcps
             }
 
             Utils.GlobalContext().Echo("Начало выключения сервера...");
-
+            // 1. Останавливаем прием новых подключений.
             _isRunning = false;
-
+            // 2. Останавливаем сервер прослушивания.
             try
             {
                 _listener?.Stop();
             }
             catch { }
-
+            // 3. Уведомляем все задачи о необходимости завершения.
             _cts?.Cancel();
-
+            // 4. Мягкое (Graceful) закрытие существующих подключений.
             await GracefulDisconnectClientsAsync(timeout).ConfigureAwait(false);
+            // 5. Принудительное завершение оставшихся подключений.
             ForceDisconnectAllClients();
+            // 6. Очистка ресурсов.
             CleanupResources();
 
             _state = ServerState.Stopped;
@@ -601,7 +617,7 @@ namespace mtcps
 
             var gracefulTasks = new List<Task>();
             var disconnectMessage = Encoding.GetBytes("SERVER_SHUTDOWN\n");
-
+            // Отправляем уведомление о завершении всем клиентам.
             foreach (var kvp in _clients)
             {
                 var task = Task.Run(async () =>
@@ -609,6 +625,7 @@ namespace mtcps
                     try
                     {
                         await kvp.Value.SslStream.WriteAsync(disconnectMessage, 0, disconnectMessage.Length);
+                        // Даем время клиенту обработать сообщение.
                         await Task.Delay(1000);
                     }
                     catch { }
@@ -616,7 +633,7 @@ namespace mtcps
 
                 gracefulTasks.Add(task);
             }
-
+            // Ожидаем завершения отправки уведомлений или таймаута.
             try
             {
                 var timeoutTask = Task.Delay(timeout);
@@ -637,6 +654,7 @@ namespace mtcps
                 try
                 {
                     clientInfo.SslStream?.Close();
+                    // Отправляем TCP RST вместо мягкого (graceful) закрытия.
                     clientInfo.Client.Client.LingerState = new LingerOption(true, 0);
                     clientInfo.Client.Close();
                     clientInfo.Cts?.Dispose();
@@ -652,6 +670,7 @@ namespace mtcps
             try
             {
                 _listener?.Stop();
+                // Очищаем токены отмены.
                 _cts?.Dispose();
             }
             catch (Exception ex)
@@ -679,6 +698,7 @@ namespace mtcps
             {
                 try
                 {
+                    // Если сервер работает, останавливаем его.
                     if (_state == ServerState.Running || _state == ServerState.Starting)
                     {
                         var stopTask = StopAsync(TimeSpan.FromSeconds(5));
@@ -690,7 +710,7 @@ namespace mtcps
 
                     _cts?.Dispose();
                     _listener?.Stop();
-
+                    // Очищаем клиентов.
                     foreach (var clientInfo in _clients.Values)
                     {
                         try
@@ -764,9 +784,9 @@ namespace mtcps
     [ContextClass("МсМногопоточныйTCPСерверSSL", "MsMultithreadedTCPServerSSL")]
     public class MsMultithreadedTCPServerSSL : AutoContext<MsMultithreadedTCPServerSSL>
     {
-        public MsMultithreadedTCPServerSSL(int port, string path_certificate_crt = null, string path_certificate_pfx = null, string pas = null)
+        public MsMultithreadedTCPServerSSL(int port, string path_cert, string pas)
         {
-            MultithreadedTCPServerSSL MultithreadedTCPServerSSL1 = new MultithreadedTCPServerSSL(port, path_certificate_crt, path_certificate_pfx, pas);
+            MultithreadedTCPServerSSL MultithreadedTCPServerSSL1 = new MultithreadedTCPServerSSL(port, path_cert, pas);
             MultithreadedTCPServerSSL1.dll_obj = this;
             Base_obj = MultithreadedTCPServerSSL1;
         }
@@ -860,7 +880,7 @@ namespace mtcps
             {
                 Utils.GlobalContext().Echo("Ошибка. На порт " + Base_obj.Port + " сервер уже запущен. " +
                     System.Environment.NewLine + e.Message);
-                OneScriptMultithreadedTCPServer.multiServerError = true;
+                OneScriptMultithreadedTCPServer.multiServerErrorSSL = true;
             }
         }
 
@@ -954,7 +974,23 @@ namespace mtcps
             byte[] pfxData = certificate.Export(X509ContentType.Pfx, pas);
             File.WriteAllBytes(path, pfxData);
 
+            Utils.GlobalContext().Echo($"Сертификат сохранен в: {path}");
+
             return certificate;
+        }
+
+        public static void ExtractCrtFromPfx(string pfxPath, string password, string crtPath)
+        {
+            // Загружаем PFX
+            X509Certificate2 cert = new X509Certificate2(pfxPath, password);
+
+            // Извлекаем только сертификат (публичную часть) в DER формате
+            byte[] crtData = cert.Export(X509ContentType.Cert);
+
+            // Сохраняем как .crt (бинарный DER формат)
+            File.WriteAllBytes(crtPath, crtData);
+
+            Utils.GlobalContext().Echo($"Сертификат сохранен в: {crtPath}");
         }
     }
 }

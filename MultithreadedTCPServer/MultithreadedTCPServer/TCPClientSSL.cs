@@ -14,7 +14,7 @@ namespace mtcps
         public System.Text.Encoding Encoding { get; set; } = System.Text.Encoding.UTF8;
         public System.Net.Sockets.TcpClient M_TcpClient;
         public string MessageReceived;
-        public string pathCertificateCrt = "certificate.crt";
+        public string pathCertificateCrt;
         public string hostname;
         public SslStream sslStream;
 
@@ -24,15 +24,12 @@ namespace mtcps
             this.ClientReceived += TCPClient_ClientReceived;
         }
 
-        public TCPClientSSL(string HostName, int port, string path_certificate_crt = null)
+        public TCPClientSSL(string HostName, int port, string path_certificate_crt)
         {
             M_TcpClient = new System.Net.Sockets.TcpClient(HostName, port);
             this.ClientReceived += TCPClient_ClientReceived;
 
-            if (path_certificate_crt != null)
-            {
-                pathCertificateCrt = path_certificate_crt;
-            }
+            pathCertificateCrt = path_certificate_crt;
 
             sslStream = new SslStream(
                 M_TcpClient.GetStream(),
@@ -58,13 +55,13 @@ namespace mtcps
         {
             if (pathCertificateCrt != null)
             {
-                // Cравниваем с ожидаемым сертификатом
+                // Cравниваем с ожидаемым сертификатом.
                 var expectedCert = new X509Certificate2(pathCertificateCrt);
                 return certificate.GetCertHashString() == expectedCert.GetCertHashString();
             }
             else
             {
-                // Для самоподписанных сертификатов просто проверяем, что он есть
+                // Для самоподписанных сертификатов просто проверяем, что он есть.
                 if (sslPolicyErrors == SslPolicyErrors.None)
                 {
                     return true;
@@ -108,14 +105,10 @@ namespace mtcps
             M_TcpClient.Close();
         }
 
-        public void Connect(string _hostname, int portNo, string path_certificate_crt = null)
+        public void Connect(string _hostname, int portNo, string path_certificate_crt)
         {
             hostname = _hostname;
-            if (pathCertificateCrt != null)
-            {
-                pathCertificateCrt = path_certificate_crt;
-            }
-
+            pathCertificateCrt = path_certificate_crt;
             M_TcpClient.Connect(hostname, portNo);
 
             sslStream = new SslStream(
@@ -250,29 +243,9 @@ namespace mtcps
         }
 
         [ContextMethod("Подключить", "Connect")]
-        public void Connect(string p1, int p2, string path_certificate_crt = null)
+        public void Connect(string p1, int p2, string path_certificate_crt = "certificate.crt")
         {
-            if (path_certificate_crt != null)
-            {
-                Base_obj.pathCertificateCrt = path_certificate_crt;
-            }
-            Base_obj.Connect(p1, p2, Base_obj.pathCertificateCrt);
-        }
-
-        [ContextMethod("ПолучитьПоток", "GetStream")]
-        public MsNetworkStream GetStream()
-        {
-            try
-            {
-                Utils.GlobalContext().Echo("Получаю Поток");
-                MsNetworkStream MsNetworkStream1 = new MsNetworkStream(Base_obj.M_TcpClient.GetStream());
-                Utils.GlobalContext().Echo("Поток Получен");
-                return MsNetworkStream1;
-            }
-            catch
-            {
-                return null;
-            }
+            Base_obj.Connect(p1, p2, path_certificate_crt);
         }
 
         [ContextMethod("ПолучитьПотокSSL", "GetStreamSSL")]

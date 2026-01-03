@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>OneScriptMultithreadedTCPServer.CreateSelfSignedCertificate Method</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="mainstyle.css">
+    <script defer src="mobilstyle.js"></script>
+</head>
+<body id=bodyID class=dtBODY>
+    <div id=nsbanner>
+        <div id=bannerrow1>
+            <table class=bannerparthead cellSpacing=0>
+                <tbody>
+                    <tr id=hdr>
+                        <td class=runninghead></td>
+                        <td class=product></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id=TitleRow>
+            <h1 class=dtH1>МногопоточныйTCPСерверДляОдноСкрипта.СоздатьСамоподписанныйСертификат (OneScriptMultithreadedTCPServer.CreateSelfSignedCertificate)&nbsp;Метод</h1>
+        </div>
+    </div>
+    <div id=nstext>
+        <h4 class=dtH4>Синтаксис</h4>
+        <p>СоздатьСамоподписанныйСертификат(&lt;ПутьСертификата&gt;, &lt;ИмяСубъекта&gt;, &lt;Пароль&gt;)</p>
+        <h4 class=dtH4>Параметры</h4>
+        <dl>
+            <dt><i>ПутьСертификата</i> (обязательный)</dt>
+            <dd>Тип: Строка.</dd>
+            <dd>
+                Полный путь до создаваемого файла сертификата.
+            </dd>
+            <dt><i>ИмяСубъекта</i> (обязательный)</dt>
+            <dd>Тип: Строка.</dd>
+            <dd>
+                Отличительное имя сертификата X509. Это имя физического или юридического лица, которому выдается сертификат. Поддерживается как верхний, так и нижний регистр символов.
+            </dd>
+            <dt><i>Пароль</i> (обязательный)</dt>
+            <dd>Тип: Строка.</dd>
+            <dd>
+                Здесь конечно нужно предварительно организовать запрос пароля, чтобы сохранить секретность пароля в контексте сценария.
+            </dd>
+        </dl>
+        <h4 class=dtH4>Возвращаемое значение</h4>
+        <p></p>
+        <p></p>
+        <h4 class=dtH4>Описание</h4>
+        <p>Генерация сертификата в файл <b>.pfx</b>. Срок действия сертификата - <b>один год</b>.</p>
+        <h4 class=dtH4>Примечание</h4>
+		<p>
+			Если потребуется организовать безопасный ввод пароля можно воспользоваться библиотекой 
+			<a href="https://infostart.ru/1c/articles/2527054/" target="_blank">Текстовый пользовательский интерфейс (TUI) для сценарного языка OneScript</a>.
+			Пример смотрите в <a href="MtcpsSecretPassword.html">Секретный ввод пароля.</a>.
+		</p>
+        <h4 class=dtH4>Пример</h4>
+            <pre class=code>
+МС.СоздатьСамоподписанныйСертификат("C:\111\certik.pfx", "OneScript", "123456");
+</pre>
+            <details>
+                <summary>Полный пример кода</summary>
+                    <pre class=code>
+<button id="copy1" type="button" style="font-size:100%;">Копировать</button>
+<hr style="border-color: lightgray;"><div id="cont1">
+ПодключитьВнешнююКомпоненту("C:\444\111\MultithreadedTCPServer\MultithreadedTCPServer\bin\Debug\MultithreadedTCPServer.dll");
+МС = Новый МногопоточныйTCPСерверДляОдноСкрипта();
+
+МС.СоздатьСамоподписанныйСертификат("C:\111\certik.pfx", "OneScript", "123456");
+</div>
+</pre>
+            </details>
+        <p></p>
+        <h4 class=dtH4>Смотрите также</h4>
+        <p><a href="Mtcps.html">Библиотека&nbsp;MultithreadedTCPServer</a></p>
+    </div>
+</body>
+</html>
