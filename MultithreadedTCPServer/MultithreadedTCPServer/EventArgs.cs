@@ -1,12 +1,5 @@
 ﻿using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Machine;
-using ScriptEngine.HostedScript.Library;
-
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Text;
-using System.Net;
 using ScriptEngine.HostedScript.Library.Binary;
 
 namespace mtcps
