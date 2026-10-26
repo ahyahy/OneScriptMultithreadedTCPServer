@@ -47,10 +47,22 @@ namespace mtcps
         [ContextMethod("Прочитать", "Read")]
         public BinaryDataBuffer Read(int p1, int p2)
         {
-            byte[] buffer = new byte[p2];
-            Base_obj.Read(buffer, p1, p2);
-            BinaryDataBuffer bdb = new BinaryDataBuffer(new byte[0]);
-            return bdb.Concat((new BinaryDataBuffer(buffer)).Read(0, buffer.Length));
+            if (p2 <= 0)
+                return new BinaryDataBuffer(new byte[0]);
+
+            if (p1 < 0)
+                p1 = 0;
+
+            // p1 — смещение в буфере назначения (как в NetworkStream.Read),
+            // p2 — сколько байт читать. Буфер должен вмещать p1 + p2, иначе
+            // прежний код падал на p1 > 0.
+            byte[] buffer = new byte[p1 + p2];
+            int read = Base_obj.Read(buffer, p1, p2);
+            if (read <= 0)
+                return new BinaryDataBuffer(new byte[0]);
+
+            // Возвращаем только реально прочитанные байты, без нулевого хвоста.
+            return (new BinaryDataBuffer(buffer)).Read(p1, read);
         }
 
         [ContextMethod("ПрочитатьВБуферДвоичныхДанных", "ReadToBinaryDataBuffer")]

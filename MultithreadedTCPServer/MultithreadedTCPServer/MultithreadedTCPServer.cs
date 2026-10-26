@@ -300,25 +300,40 @@ namespace mtcps
                 {
                     try
                     {
-                        // Читаем входящие данные
-                        BinaryDataBuffer bdb = new BinaryDataBuffer(new byte[0]);
+                        // Читаем входящие данные. Накапливаем в MemoryStream:
+                        // BinaryDataBuffer.Concat каждый раз копирует весь буфер (O(n^2)).
+                        BinaryDataBuffer bdb = null;
                         int bytesRead = 0;
-                        do
+                        using (var ms = new System.IO.MemoryStream())
                         {
-                            bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, token).ConfigureAwait(false);
-                            bdb = bdb.Concat((new BinaryDataBuffer(buffer)).Read(0, bytesRead));
-
-                            // Ограничение на размер сообщения.
-                            if (bdb.Size > maxMessageSize)
+                            do
                             {
-                                await SendRejectionAndClose(client, "Превышен размер сообщения");
-                                bdb = new BinaryDataBuffer(new byte[0]);
-                                OnServerError?.Invoke("Превышен размер сообщения для клиента " + clientId + ". Клиент отключен.");
-                                break;
-                            }
-                        } while (bytesRead == buffer.Length);
+                                bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, token).ConfigureAwait(false);
+                                if (bytesRead <= 0)
+                                    break;
+                                ms.Write(buffer, 0, bytesRead);
 
-                        if (bdb?.Count() > 0)
+                                // Ограничение на размер сообщения.
+                                if (ms.Length > maxMessageSize)
+                                {
+                                    await SendRejectionAndClose(client, "Превышен размер сообщения");
+                                    OnServerError?.Invoke("Превышен размер сообщения для клиента " + clientId + ". Клиент отключен.");
+                                    ms.SetLength(0);
+                                    break;
+                                }
+
+                                // Не ждём следующую порцию, если данных сейчас нет:
+                                // иначе на размере, кратном buffer.Length, цикл
+                                // зависает в ReadAsync (таймаута нет).
+                                if (!stream.DataAvailable)
+                                    break;
+                            } while (bytesRead == buffer.Length);
+
+                            if (ms.Length > 0)
+                                bdb = new BinaryDataBuffer(ms.ToArray());
+                        }
+
+                        if (bdb != null && bdb.Count() > 0)
                         {
                             // Вызываем обработчик данных
                             try
